@@ -24,6 +24,14 @@
 
         start();
 
+        function animation(){
+            durum.fadeIn(2000, () => {
+            setTimeout(() => {
+              durum.fadeOut(2000);
+            }, 2000)
+          });
+        }
+
         const durum = $("#status");
 
         //durum fonksiyonları
@@ -32,11 +40,7 @@
           durum.css("background-color", "blue");
           durum.css("color", "white");
           durum.html("Bağlantı kuruluyor....");
-          durum.fadeIn(2000, () => {
-            setTimeout(() => {
-              durum.fadeOut(2000);
-            }, 2000);
-          });
+          animation();
         });
 
         //baglantı koptu ve yeniden baglanıldı. yeniden baglantı gerçekleştiğinde tetiklenen eventtir.
@@ -44,11 +48,7 @@
           durum.css("background-color", "green");
           durum.css("color", "white");
           durum.html("Bağlantı kuruldu....");
-          durum.fadeIn(2000, () => {
-            setTimeout(() => {
-              durum.fadeOut(2000);
-            }, 2000);
-          });
+          animation();
         });
 
         //baglantı koptu ve yeniden baglantı girişimleri sonucsuz kaldı. bu durumda fırlatılan eventtir.
@@ -56,12 +56,32 @@
           durum.css("background-color", "red");
           durum.css("color", "white");
           durum.html("Bağlantı sağlanamadı....");
-          durum.fadeIn(2000, () => {
-            setTimeout(() => {
-              durum.fadeOut(2000);
-            }, 2000);
-          });
+          animation();
         });  
+
+
+        connection.on("UserJoined", connectionId => {
+            durum.css("background-color", "green");
+            durum.html(`${connectionId} bağlandı.`)
+            animation();
+        });
+        connection.on("UserLeaved", connectionId => {
+            durum.css("background-color", "red");
+            durum.html(`${connectionId} çıkış yaptı.`)
+            animation();
+        });
+
+
+        connection.on("Clients", clientsData => {
+            let text = "";
+             $.each(clientsData, (index, item) => {
+                text += `<li>${item}</li>`;
+             });
+             $("#clients").html(text);
+        });
+
+
+
 
         $("#btnGonder").click(() => {
           let message = $("#txtMessage").val();
@@ -72,7 +92,7 @@
             );
         });
 
-        connection.on("ReceiveMessage", (message) => {
+        connection.on("ReceiveMessage", message => {
           $("#getMessage").append(message + "<br>");
         });
 
@@ -88,5 +108,12 @@
     <button id="btnGonder">Gönder</button>
 
     <div id="getMessage"></div>
+
+    <div>
+        <ul id="clients">
+            
+        </ul>
+    </div>
+
   </body>
 </html>

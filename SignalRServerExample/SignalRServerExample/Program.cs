@@ -1,10 +1,14 @@
+using SignalRServerExample.Business;
 using SignalRServerExample.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+builder.Services.AddTransient<MyBusiness>();
 builder.Services.AddSignalR();
+builder.Services.AddControllers();
 
 builder.Services.AddCors(opt => opt.AddDefaultPolicy(policy =>
     policy.AllowAnyMethod()
@@ -30,6 +34,7 @@ app.UseCors();
 app.UseRouting();
 
 app.MapHub<MyHub>("/myhub");
+app.MapControllers();
 
 app.UseAuthorization();
 
