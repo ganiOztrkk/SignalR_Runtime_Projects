@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="signalr.min.js"></script>
+    <script src="jquery.min.js"></script>
+
+    <script>
+      $(document).ready(() => {
+        const connection = new signalR.HubConnectionBuilder()
+          .withUrl("https://localhost:7296/myhub")
+          .withAutomaticReconnect([1000, 1000, 1000, 3000]) //0 - 2 - 10 - 30 - baglantı saglanır ve sonrasında baglantı koparsa bu aralıklarla tekrar baglantı deneyecek.
+          .build();
+
+        
+        /* connection.start(); */
+        //baglantı hic kurulamadıysa
+          async function start() {
+          try {
+             await connection.start();
+          } catch (error) {
+            setTimeout(() => start(), 1000);
+          }
+        }
+
+        start();
+
+        const durum = $("#status");
+
+        //durum fonksiyonları
+        //baglandın ve baglantı koptu. yeniden baglanma girişimlerini başlatmadan önce fırlatılan, tetiklenen eventtir.
+        connection.onreconnecting((error) => {
+          durum.css("background-color", "blue");
+          durum.css("color", "white");
+          durum.html("Bağlantı kuruluyor....");
+          durum.fadeIn(2000, () => {
+            setTimeout(() => {
+              durum.fadeOut(2000);
+            }, 2000);
+          });
+        });
+
+        //baglantı koptu ve yeniden baglanıldı. yeniden baglantı gerçekleştiğinde tetiklenen eventtir.
+        connection.onreconnected((connectionId) => {
+          durum.css("background-color", "green");
+          durum.css("color", "white");
+          durum.html("Bağlantı kuruldu....");
+          durum.fadeIn(2000, () => {
+            setTimeout(() => {
+              durum.fadeOut(2000);
+            }, 2000);
+          });
+        });
+
+        //baglantı koptu ve yeniden baglantı girişimleri sonucsuz kaldı. bu durumda fırlatılan eventtir.
+        connection.onclose((connectionId) => {
+          durum.css("background-color", "red");
+          durum.css("color", "white");
+          durum.html("Bağlantı sağlanamadı....");
+          durum.fadeIn(2000, () => {
+            setTimeout(() => {
+              durum.fadeOut(2000);
+            }, 2000);
+          });
+        });  
+
+        $("#btnGonder").click(() => {
+          let message = $("#txtMessage").val();
+          connection
+            .invoke("SendMessageAsync", message)
+            .catch((error) =>
+              console.log(`Mesaj gönderilirken hata oluştu. ${error}`)
+            );
+        });
+
+        connection.on("ReceiveMessage", (message) => {
+          $("#getMessage").append(message + "<br>");
+        });
+
+
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="status" style="display: none"></div>
+
+    <input type="text" id="txtMessage" />
+    <button id="btnGonder">Gönder</button>
+
+    <div id="getMessage"></div>
+  </body>
+</html>
