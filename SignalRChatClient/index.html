@@ -102,12 +102,12 @@
                 $("#rooms").append(options);
             });
 
-            $("#btnOdalaraGir").click( () => {
+            $("#btnOdalaraGir").click( function() {
                 let groupNames = [];
                 $("#rooms option:selected").map( (i,e) => {
                     groupNames.push(e.innerHTML);
                 });
-                connection.invoke("AddClientToGroup", groupNames)
+                connection.invoke("AddClientToGroup", groupNames);
             });
 
             $(".rooms").change( function() {
